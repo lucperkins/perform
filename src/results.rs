@@ -4,7 +4,7 @@ use average::{define_histogram, Histogram10, Max, Mean, Min, Quantile, Variance}
 pub struct Results {
     units: Units,
     results: Vec<f64>,
-};
+}
 
 #[derive(sqlx::Type)]
 pub enum Units {
@@ -21,7 +21,8 @@ impl Into<String> for Units {
             Milliseconds => "ms",
             Microseconds => "us",
             Nanoseconds => "ns",
-        }).to_owned()
+        })
+        .to_owned()
     }
 }
 
