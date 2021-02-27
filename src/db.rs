@@ -1,6 +1,5 @@
 use crate::bench::Bench;
 use crate::Error;
-use async_trait::async_trait;
 use indoc::indoc;
 use sqlx::{Pool, Postgres};
 
