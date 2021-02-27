@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  perform:
+    build:
+      context: .
+  postgres:
+    image: library/postgres:13.2-alpine
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: perform
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: perform
+    command: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data: {}
