@@ -90,7 +90,6 @@ impl Default for Units {
 #[cfg(test)]
 mod tests {
     use super::{Results, Units};
-    use average::Histogram10;
 
     #[test]
     fn error_on_empty_results() {
