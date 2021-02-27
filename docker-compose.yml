@@ -3,6 +3,10 @@ services:
   perform:
     build:
       context: .
+    ports:
+      - 8080:8080
+    environment:
+      POSTGRES_URL: postgres://perform:pass@postgres:5432/perform
   postgres:
     image: library/postgres:13.2-alpine
     restart: always
