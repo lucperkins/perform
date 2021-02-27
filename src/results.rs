@@ -2,12 +2,15 @@ use crate::Error;
 use average::{Histogram10, Max, Mean, Min, Variance};
 
 #[derive(sqlx::Type)]
+#[sqlx(type_name = "results")]
 pub struct Results {
     units: Units,
     results: Vec<f64>,
 }
 
 #[derive(sqlx::Type)]
+#[sqlx(type_name = "units")]
+#[sqlx(rename_all = "lowercase")]
 pub enum Units {
     Milliseconds,
     Microseconds,
