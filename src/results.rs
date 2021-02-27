@@ -17,6 +17,44 @@ pub enum Units {
     Nanoseconds,
 }
 
+impl Results {
+    pub fn new(units: Units, results: Vec<f64>) -> Result<Self, Error> {
+        if results.is_empty() {
+            return Err(Error::EmptyResults);
+        }
+
+        Ok(Self { units, results })
+    }
+
+    pub fn min(&self) -> f64 {
+        let m: Min = self.results.iter().collect();
+        m.min()
+    }
+
+    fn max(&self) -> f64 {
+        let m: Max = self.results.iter().collect();
+        m.max()
+    }
+
+    pub fn mean(&self) -> f64 {
+        let m: Mean = self.results.iter().collect();
+        m.mean()
+    }
+
+    pub fn variance(&self) -> f64 {
+        let v: Variance = self.results.iter().collect();
+        v.sample_variance()
+    }
+
+    fn histogram(&self) -> Histogram10 {
+        let mut hist = Histogram10::with_const_width(self.min(), self.max());
+        self.results.iter().for_each(|i| {
+            let _ = hist.add(*i);
+        });
+        hist
+    }
+}
+
 impl Into<String> for Units {
     fn into(self) -> String {
         use Units::*;
@@ -49,51 +87,42 @@ impl Default for Units {
     }
 }
 
-impl Results {
-    pub fn new(units: Units, results: Vec<f64>) -> Result<Self, Error> {
-        if results.is_empty() {
-            return Err(Error::EmptyResults);
-        }
-
-        Ok(Self { units, results })
-    }
-
-    fn min(&self) -> f64 {
-        let m: Min = self.results.iter().collect();
-        m.min()
-    }
-
-    fn max(&self) -> f64 {
-        let m: Max = self.results.iter().collect();
-        m.max()
-    }
-
-    pub fn mean(&self) -> f64 {
-        let m: Mean = self.results.iter().collect();
-        m.mean()
-    }
-
-    pub fn variance(&self) -> f64 {
-        let v: Variance = self.results.iter().collect();
-        v.sample_variance()
-    }
-
-    fn histogram(&self) -> Histogram10 {
-        let mut hist = Histogram10::with_const_width(self.min(), self.max());
-        self.results.iter().for_each(|i| {
-            let _ = hist.add(*i);
-        });
-        hist
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::{Results, Units};
+    use average::Histogram10;
 
     #[test]
     fn error_on_empty_results() {
         let results = Results::new(Units::default(), vec![]);
         assert!(results.is_err());
+    }
+
+    #[test]
+    fn results_min() {
+        let res = vec![0.0, 101.1, 497.75];
+        let results = Results::new(Units::default(), res).unwrap();
+        assert_eq!(results.min(), 0.0);
+    }
+
+    #[test]
+    fn results_max() {
+        let res = vec![1010101.0, 1010101.1];
+        let results = Results::new(Units::default(), res).unwrap();
+        assert_eq!(results.max(), 1010101.1);
+    }
+
+    #[test]
+    fn results_mean() {
+        let res = vec![1010101.0, 1010101.1];
+        let results = Results::new(Units::default(), res).unwrap();
+        assert_eq!(results.mean(), 1010101.05);
+    }
+
+    #[test]
+    fn results_variance() {
+        let res = vec![0.0, 1.0, 2.0];
+        let results = Results::new(Units::default(), res).unwrap();
+        assert_eq!(results.variance(), 1.0);
     }
 }
