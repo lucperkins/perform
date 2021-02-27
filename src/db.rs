@@ -11,26 +11,43 @@ impl DB {
         Ok(Self(db))
     }
 
-    pub async fn get_bench_by_name(&self, name: String) -> anyhow::Result<Option<Bench>> {
-        let query = "SELECT * FROM benches WHERE name = $1";
-        let bench = sqlx::query_as(query)
-            .bind(name)
-            .fetch_optional(&self.0)
-            .await?;
+    pub async fn create_bench_table(&self, id: usize) -> anyhow::Result<()> {
+        let query = format!(
+            indoc! {r#"
+                CREATE TABLE IF NOT EXISTS benches_{} (
+                    timestamp TIMESTAMP NOT NULL,
+                    mean NUMERIC NOT NULL,
+                    variance NUMERIC NOT NULL
+                );
+            "#},
+            id
+        );
 
-        Ok(bench)
+        let _ = sqlx::query(&query).execute(&self.0).await?;
+
+        Ok(())
     }
 
-    pub async fn create_bench(&self, bench: Bench) -> anyhow::Result<()> {
-        let query = indoc! {r#"
-            INSERT INTO benches (name, metadata, results)
-            VALUES ($1, $2, $3)
-        "#};
+    pub async fn get_benches_by_id(&self, id: usize) -> anyhow::Result<Vec<Bench>> {
+        let query = format!("SELECT * FROM benches_{}", id);
+        let benches: Vec<Bench> = sqlx::query_as(&query).fetch_all(&self.0).await?;
+
+        Ok(benches)
+    }
+
+    pub async fn add_bench(&self, id: usize, bench: Bench) -> anyhow::Result<()> {
+        let query = format!(
+            indoc! {r#"
+                INSERT INTO benches_{} (timestamp, mean, variance)
+                VALUES ($1, $2, $3)
+            "#},
+            id
+        );
         let mut tx = self.0.begin().await?;
-        let _ = sqlx::query(query)
-            .bind(bench.name)
-            .bind(bench.metadata)
-            .bind(bench.results)
+        let _ = sqlx::query(&query)
+            .bind(bench.timestamp)
+            .bind(bench.mean)
+            .bind(bench.variance)
             .execute(&mut tx)
             .await?;
 
