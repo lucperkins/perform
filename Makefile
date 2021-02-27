@@ -4,6 +4,9 @@ check:
 clippy:
 	cargo clippy -- --deny warnings
 
+dev:
+	cargo watch -x check
+
 fmt:
 	cargo fmt --all -- --check
 
