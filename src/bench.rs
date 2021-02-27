@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 use crate::results::Results;
 use chrono::{DateTime, Utc};
 
@@ -6,6 +7,7 @@ pub struct Bench {
     pub timestamp: DateTime<Utc>,
     pub mean: f64,
     pub variance: f64,
+    // TODO: calculate more meaningful results
 }
 
 impl Bench {

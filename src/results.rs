@@ -1,4 +1,5 @@
-use average::{define_histogram, Histogram10, Max, Mean, Min, Quantile, Variance};
+use crate::Error;
+use average::{Histogram10, Max, Mean, Min, Variance};
 
 #[derive(sqlx::Type)]
 pub struct Results {
@@ -39,9 +40,19 @@ impl From<&str> for Units {
     }
 }
 
+impl Default for Units {
+    fn default() -> Self {
+        Self::Milliseconds
+    }
+}
+
 impl Results {
-    fn new(units: Units, results: Vec<f64>) -> Self {
-        Self { units, results }
+    pub fn new(units: Units, results: Vec<f64>) -> Result<Self, Error> {
+        if results.is_empty() {
+            return Err(Error::EmptyResults);
+        }
+
+        Ok(Self { units, results })
     }
 
     fn min(&self) -> f64 {
@@ -70,5 +81,16 @@ impl Results {
             let _ = hist.add(*i);
         });
         hist
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Results, Units};
+
+    #[test]
+    fn error_on_empty_results() {
+        let results = Results::new(Units::default(), vec![]);
+        assert!(results.is_err());
     }
 }
